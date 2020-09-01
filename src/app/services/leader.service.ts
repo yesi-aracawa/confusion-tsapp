@@ -11,29 +11,18 @@ export class LeaderService {
   constructor() {}
 
   getLeaders(): Promise<Leader[]> {
-    return new Promise((resolve) => {
-      // Simulate server latency with 2 second delay
-      setTimeout(() => resolve(LEADERS), 2000);
-    });
+    return of(LEADERS).pipe(delay(2000)).toPromise();
   }
 
   getLeader(id: string): Promise<Leader> {
-    return new Promise((resolve) => {
-      // Simulate server latency with 2 second delay
-      setTimeout(
-        () => resolve(LEADERS.filter((leader) => leader.id === id)[0]),
-        2000
-      );
-    });
+    return of(LEADERS.filter((leader) => leader.id === id)[0])
+      .pipe(delay(2000))
+      .toPromise();
   }
 
   getFeaturedLeader(): Promise<Leader> {
-    return new Promise((resolve) => {
-      // Simulate server latency with 2 second delay
-      setTimeout(
-        () => resolve(LEADERS.filter((leader) => leader.featured)[0]),
-        2000
-      );
-    });
+    return of(LEADERS.filter((leader) => leader.featured)[0])
+      .pipe(delay(2000))
+      .toPromise();
   }
 }
