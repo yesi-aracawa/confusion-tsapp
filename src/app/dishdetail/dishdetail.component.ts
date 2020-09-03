@@ -38,6 +38,7 @@ export class DishdetailComponent implements OnInit {
   commentary: Comment;
 
   dish: Dish;
+  dishcopy: Dish;
   dishIds: string[];
   prev: string;
   next: string;
@@ -65,6 +66,7 @@ export class DishdetailComponent implements OnInit {
       .subscribe(
         (dish) => {
           this.dish = dish;
+          this.dishcopy = dish;
           this.setPrevNext(dish.id);
         },
         (errmess) => (this.errMess = <any>errmess)
@@ -97,7 +99,18 @@ export class DishdetailComponent implements OnInit {
   onSubmit() {
     this.commentary = this.commentForm.value;
     this.commentary.date = new Date().toISOString();
-    this.dish.comments.push(this.commentary);
+    this.dishcopy.comments.push(this.commentary);
+    this.dishservice.putDish(this.dishcopy).subscribe(
+      (dish) => {
+        this.dish = dish;
+        this.dishcopy = dish;
+      },
+      (errmess) => {
+        this.dish = null;
+        this.dishcopy = null;
+        this.errMess = <any>errmess;
+      }
+    );
     this.isShow = false;
     console.log(this.commentary);
     this.commentForm.reset({
