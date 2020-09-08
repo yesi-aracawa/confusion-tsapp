@@ -1,7 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Feedback, ContactType } from '../shared/feedback';
-import { flyInOut } from '../animations/app.animations';
+import { FeedbackService } from '../services/feedback.service';
+import { flyInOut, expand } from '../animations/app.animations';
+import { Params, ActivatedRoute } from '@angular/router';
+import { switchMap } from 'rxjs/operators';
+import { visibility } from '../animations/app.animations';
+import { from } from 'rxjs';
 
 @Component({
   selector: 'app-contact',
@@ -11,7 +16,7 @@ import { flyInOut } from '../animations/app.animations';
     '[@flyInOut]': 'true',
     style: 'display: block;',
   },
-  animations: [flyInOut()],
+  animations: [flyInOut(), visibility(), expand()],
 })
 export class ContactComponent implements OnInit {
   @ViewChild('fform') feedbackFormDirective;
@@ -47,12 +52,22 @@ export class ContactComponent implements OnInit {
   feedbackForm: FormGroup;
   feedback: Feedback;
   contactType = ContactType;
+  feedbackErrMess: string;
+  visibility = 'shown';
+  public isShow: boolean = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private feedbackService: FeedbackService,
+    private route: ActivatedRoute,
+    @Inject('baseURL') private baseURL
+  ) {
     this.createForm();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.visibility);
+  }
 
   createForm() {
     this.feedbackForm = this.fb.group({
@@ -87,8 +102,25 @@ export class ContactComponent implements OnInit {
   }
 
   onSubmit() {
+    this.visibility = 'hidden';
     this.feedback = this.feedbackForm.value;
     console.log(this.feedback);
+    console.log(this.visibility);
+    this.feedbackService.submitFeedback(this.feedback).subscribe(
+      (feedback) => {
+        this.feedback = feedback;
+        this.isShow = true;
+        this.visibility = '';
+        setTimeout(() => {
+          this.isShow = false;
+          this.visibility = 'shown';
+        }, 5000);
+      },
+      (feedbackerrmess) => {
+        this.feedback = null;
+        this.feedbackErrMess = <any>feedbackerrmess;
+      }
+    );
     this.feedbackForm.reset({
       firstname: '',
       lastname: '',
